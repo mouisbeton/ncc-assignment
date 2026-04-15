@@ -14,7 +14,7 @@ pipeline {
         SONARQUBE_ENV = 'sonarserver'
         PROJECT_KEY   = 'go-project'
         PROJECT_NAME  = 'go-project'
-        SCANNER_HOME  = tool 'sonarqube8.0'
+        SCANNER_HOME  = '/tmp/sonar-scanner'
     }
 
     stages {
@@ -31,7 +31,10 @@ pipeline {
                 sh '''
                     git config --global --add safe.directory ${WORKSPACE}
                     apt-get update -qq
-                    apt-get install -y -qq default-jre-headless
+                    apt-get install -y -qq default-jre-headless wget unzip
+                    wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip -O /tmp/sonar-scanner.zip
+                    unzip -q /tmp/sonar-scanner.zip -d /tmp
+                    mv /tmp/sonar-scanner-5.0.1.3006-linux /tmp/sonar-scanner
                     go version
                     go mod download
                 '''
