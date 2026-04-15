@@ -6,6 +6,7 @@ pipeline {
                     -e HOME=/tmp \
                     -e GOCACHE=/tmp/go-cache \
                     -e GOPATH=/tmp/go \
+                    --network jenkins_jenkins-network \
                     -v /var/jenkins_home/tools:/var/jenkins_home/tools'''
         }
     }
