@@ -11,10 +11,6 @@ pipeline {
         githubPush()
     }
 
-    parameters {
-        booleanParam(name: 'RUN_DEPLOY', defaultValue: false, description: 'Deploy with docker compose after quality gate')
-    }
-
     environment {
         SONARQUBE_ENV = 'sonarserver'
         PROJECT_KEY   = 'ncc-assignment-js'
@@ -133,9 +129,6 @@ pipeline {
         }
 
         stage('Deploy') {
-            when {
-                expression { return params.RUN_DEPLOY }
-            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
