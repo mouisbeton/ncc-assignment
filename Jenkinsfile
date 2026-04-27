@@ -28,6 +28,9 @@ pipeline {
         PROJECT_KEY   = 'ncc-assignment-js'
         PROJECT_NAME  = 'ncc-assignment-js'
         SCANNER_HOME  = tool 'sonarqube8.0'
+        DOCKER_HOST   = ''
+        DOCKER_TLS_VERIFY = ''
+        DOCKER_CERT_PATH = ''
     }
 
     stages {
@@ -126,9 +129,6 @@ pipeline {
         }
         failure {
             echo 'Pipeline gagal'
-        }
-        always {
-            cleanWs(deleteDirs: true, disableDeferredWipeout: true)
         }
     }
 }
