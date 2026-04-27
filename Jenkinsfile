@@ -20,6 +20,7 @@ pipeline {
         PROJECT_KEY   = 'ncc-assignment-js'
         PROJECT_NAME  = 'ncc-assignment-js'
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
+        HOST_WORKSPACE = "/var/lib/docker/volumes/jenkins-data/_data/workspace/${JOB_NAME}"
     }
 
     stages {
@@ -59,7 +60,7 @@ pipeline {
                     docker run --rm \
                       --user root \
                       -e NPM_CONFIG_CACHE=/tmp/.npm \
-                      -v "$WORKSPACE":/workspace \
+                                            -v "$HOST_WORKSPACE":/workspace \
                       -w /workspace/src \
                       node:18-bookworm \
                       npm ci --no-audit --no-fund
@@ -76,7 +77,7 @@ pipeline {
                             unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
                                                             --user root \
-                              -v "$WORKSPACE":/workspace \
+                                                            -v "$HOST_WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
                               npm run test --if-present
@@ -90,7 +91,7 @@ pipeline {
                             unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
                                                             --user root \
-                              -v "$WORKSPACE":/workspace \
+                                                            -v "$HOST_WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
                               sh -lc 'node server.js & APP_PID=$!; \
@@ -117,7 +118,7 @@ pipeline {
                         fi
                         docker run --rm \
                           -e SONAR_HOST_URL="\${SONAR_HOST_URL}" \
-                          -v "\$WORKSPACE":/usr/src \
+                                                    -v "\$HOST_WORKSPACE":/usr/src \
                           -w /usr/src \
                           sonarsource/sonar-scanner-cli:latest \
                           sonar-scanner \
