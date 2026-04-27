@@ -133,9 +133,8 @@ pipeline {
                             mkdir -p "\$WORKSPACE/.scannerwork"
                                                 docker run --rm \
                                                     -v "\$HOST_WORKSPACE":/usr/src \
-                                                    -v "\$HOST_WORKSPACE/.scannerwork":/out \
                                                     alpine:3.20 \
-                                                    sh -lc "cp /usr/src/.scannerwork/report-task.txt /out/report-task.txt"
+                                                    sh -lc "test -f /usr/src/.scannerwork/report-task.txt"
                     """
                 }
             }
