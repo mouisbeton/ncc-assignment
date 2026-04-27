@@ -96,7 +96,7 @@ pipeline {
                               node:18-bookworm \
                                                             sh -lc "node server.js & APP_PID=\$!; \
                                                                 for i in 1 2 3 4 5; do \
-                                                                    node -e 'const http=require(\"http\");http.get(\"http://127.0.0.1:3000/health\",r=>process.exit(r.statusCode===200?0:1)).on(\"error\",()=>process.exit(1));' && break; \
+                                                                    curl -fsS http://127.0.0.1:3000/health && break; \
                                                                     sleep 1; \
                                                                 done; \
                                                                 RESULT=\$?; kill \$APP_PID; wait \$APP_PID 2>/dev/null || true; exit \$RESULT"
