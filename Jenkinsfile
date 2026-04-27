@@ -21,6 +21,7 @@ pipeline {
         PROJECT_NAME  = 'ncc-assignment-js'
         NPM_CONFIG_CACHE = "${WORKSPACE}/.npm"
         HOST_WORKSPACE = "/var/lib/docker/volumes/jenkins-data/_data/workspace/${JOB_NAME}"
+        SCANNER_HOME  = tool 'sonarqube8.0'
     }
 
     stages {
@@ -110,31 +111,13 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh """
-                        export DOCKER_HOST=unix:///var/run/docker.sock
-                        unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
-                                                export SONAR_HOST_URL=http://127.0.0.1:9000
-                        TOKEN_OPT=''
-                        if [ -n "\${SONAR_AUTH_TOKEN:-}" ]; then
-                          TOKEN_OPT="-Dsonar.token=\${SONAR_AUTH_TOKEN}"
-                        fi
-                        docker run --rm \
-                            --network host \
-                            -e SONAR_HOST_URL="\${SONAR_HOST_URL}" \
-                            -v "\$HOST_WORKSPACE":/usr/src \
-                          -w /usr/src \
-                          sonarsource/sonar-scanner-cli:latest \
-                          sonar-scanner \
-                            -Dsonar.projectKey=${PROJECT_KEY} \
-                            -Dsonar.projectName=${PROJECT_NAME} \
-                            -Dsonar.sources=src \
-                            -Dsonar.exclusions=**/node_modules/** \
-                            \$TOKEN_OPT
+                                                ${SCANNER_HOME}/bin/sonar-scanner \
+                                                    -Dsonar.projectKey=${PROJECT_KEY} \
+                                                    -Dsonar.projectName=${PROJECT_NAME} \
+                                                    -Dsonar.sources=src \
+                                                    -Dsonar.exclusions=**/node_modules/**
 
-                            mkdir -p "\$WORKSPACE/.scannerwork"
-                                                docker run --rm \
-                                                    -v "\$HOST_WORKSPACE":/usr/src \
-                                                    alpine:3.20 \
-                                                    sh -lc "test -f /usr/src/.scannerwork/report-task.txt"
+                                                test -f "\$WORKSPACE/.scannerwork/report-task.txt"
                     """
                 }
             }
