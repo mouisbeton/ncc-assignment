@@ -118,9 +118,9 @@ pipeline {
                           TOKEN_OPT="-Dsonar.token=\${SONAR_AUTH_TOKEN}"
                         fi
                         docker run --rm \
-                                                    --network host \
-                                                    -e SONAR_HOST_URL="\${SONAR_HOST_URL}" \
-                                                    -v "\$HOST_WORKSPACE":/usr/src \
+                            --network host \
+                            -e SONAR_HOST_URL="\${SONAR_HOST_URL}" \
+                            -v "\$HOST_WORKSPACE":/usr/src \
                           -w /usr/src \
                           sonarsource/sonar-scanner-cli:latest \
                           sonar-scanner \
@@ -129,6 +129,13 @@ pipeline {
                             -Dsonar.sources=src \
                             -Dsonar.exclusions=**/node_modules/** \
                             \$TOKEN_OPT
+
+                            mkdir -p "\$WORKSPACE/.scannerwork"
+                            docker run --rm \
+                            -v "\$HOST_WORKSPACE":/usr/src \
+                            alpine:3.20 \
+                            cat /usr/src/.scannerwork/report-task.txt \
+                            > "\$WORKSPACE/.scannerwork/report-task.txt"
                     """
                 }
             }
