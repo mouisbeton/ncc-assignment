@@ -131,11 +131,11 @@ pipeline {
                             \$TOKEN_OPT
 
                             mkdir -p "\$WORKSPACE/.scannerwork"
-                            docker run --rm \
-                            -v "\$HOST_WORKSPACE":/usr/src \
-                            alpine:3.20 \
-                            cat /usr/src/.scannerwork/report-task.txt \
-                            > "\$WORKSPACE/.scannerwork/report-task.txt"
+                                                docker run --rm \
+                                                    -v "\$HOST_WORKSPACE":/usr/src \
+                                                    -v "\$WORKSPACE/.scannerwork":/out \
+                                                    alpine:3.20 \
+                                                    sh -lc "cp /usr/src/.scannerwork/report-task.txt /out/report-task.txt"
                     """
                 }
             }
