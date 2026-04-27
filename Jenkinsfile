@@ -47,11 +47,11 @@ pipeline {
                     unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     docker run --rm \
                       --user "$(id -u):$(id -g)" \
-                      -e NPM_CONFIG_CACHE=/workspace/.npm \
+                      -e NPM_CONFIG_CACHE=/tmp/.npm \
                       -v "$WORKSPACE":/workspace \
                       -w /workspace/src \
                       node:18-bookworm \
-                      npm ci --prefer-offline
+                      npm install --no-audit --no-fund
                 '''
             }
         }
