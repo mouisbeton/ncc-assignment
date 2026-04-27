@@ -46,7 +46,7 @@ pipeline {
                     export DOCKER_HOST=unix:///var/run/docker.sock
                     unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     docker run --rm \
-                      --user "$(id -u):$(id -g)" \
+                                            --user root \
                       -e NPM_CONFIG_CACHE=/tmp/.npm \
                       -v "$WORKSPACE":/workspace \
                       -w /workspace/src \
@@ -64,7 +64,7 @@ pipeline {
                             export DOCKER_HOST=unix:///var/run/docker.sock
                             unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
-                              --user "$(id -u):$(id -g)" \
+                                                            --user root \
                               -v "$WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
@@ -78,7 +78,7 @@ pipeline {
                             export DOCKER_HOST=unix:///var/run/docker.sock
                             unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
-                              --user "$(id -u):$(id -g)" \
+                                                            --user root \
                               -v "$WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
