@@ -90,16 +90,16 @@ pipeline {
                             export DOCKER_HOST=unix:///var/run/docker.sock
                             unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
-                                                            --user root \
-                                                            -v "$HOST_WORKSPACE":/workspace \
+                              --user root \
+                              -v "$HOST_WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
-                                                            sh -lc "node server.js & APP_PID=\$!; \
-                                                                for i in 1 2 3 4 5; do \
-                                                                    curl -fsS http://127.0.0.1:3000/health && break; \
-                                                                    sleep 1; \
-                                                                done; \
-                                                                RESULT=\$?; kill \$APP_PID; wait \$APP_PID 2>/dev/null || true; exit \$RESULT"
+                              sh -lc "node server.js & \
+                                for i in 1 2 3 4 5; do \
+                                  sleep 1; \
+                                  curl -fsS http://127.0.0.1:3000/health && break; \
+                                done; \
+                                exit \$?"
                         '''
                     }
                 }
