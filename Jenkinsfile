@@ -29,6 +29,17 @@ pipeline {
             }
         }
 
+        stage('Debug Workspace') {
+            steps {
+                sh '''
+                    pwd
+                    ls -la
+                    ls -la src || true
+                    find . -maxdepth 2 -type f | sort
+                '''
+            }
+        }
+
         stage('Setup') {
             steps {
                 sh '''
@@ -46,12 +57,12 @@ pipeline {
                     export DOCKER_HOST=unix:///var/run/docker.sock
                     unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     docker run --rm \
-                                            --user root \
+                      --user root \
                       -e NPM_CONFIG_CACHE=/tmp/.npm \
                       -v "$WORKSPACE":/workspace \
                       -w /workspace/src \
                       node:18-bookworm \
-                      npm install --no-audit --no-fund
+                      npm ci --no-audit --no-fund
                 '''
             }
         }
