@@ -114,6 +114,7 @@ pipeline {
                                                 ${SCANNER_HOME}/bin/sonar-scanner \
                                                     -Dsonar.projectKey=${PROJECT_KEY} \
                                                     -Dsonar.projectName=${PROJECT_NAME} \
+                                                    -Dsonar.host.url=http://209.97.171.8:9000 \
                                                     -Dsonar.sources=src \
                                                     -Dsonar.exclusions=**/node_modules/**
 
