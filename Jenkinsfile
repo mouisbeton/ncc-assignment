@@ -130,16 +130,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        export DOCKER_HOST=unix:///var/run/docker.sock
-                        unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
-                        command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia di Jenkins agent"; exit 1; }
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker compose down || true
-                        docker compose up -d --build
-                    '''
-                }
+                sh '''
+                    export DOCKER_HOST=unix:///var/run/docker.sock
+                    unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
+                    command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia di Jenkins agent"; exit 1; }
+                    docker compose down || true
+                    docker compose up -d --build
+                '''
             }
         }
     }
