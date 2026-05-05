@@ -42,6 +42,8 @@ pipeline {
             steps {
                 sh '''
                     git config --global --add safe.directory ${WORKSPACE}
+                    export DOCKER_HOST=unix:///var/run/docker.sock
+                    unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     docker version
                 '''
             }
@@ -50,6 +52,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
+                    export DOCKER_HOST=unix:///var/run/docker.sock
+                    unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     docker run --rm \
                       --user root \
                       -e NPM_CONFIG_CACHE=/tmp/.npm \
@@ -66,9 +70,11 @@ pipeline {
                 stage('Unit Test') {
                     steps {
                         sh '''
+                            export DOCKER_HOST=unix:///var/run/docker.sock
+                            unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
-                              --user root \
-                              -v "$HOST_WORKSPACE":/workspace \
+                                                            --user root \
+                                                            -v "$HOST_WORKSPACE":/workspace \
                               -w /workspace/src \
                               node:18-bookworm \
                               npm run test --if-present
@@ -78,6 +84,8 @@ pipeline {
                 stage('Endpoint Smoke Test') {
                     steps {
                         sh '''
+                            export DOCKER_HOST=unix:///var/run/docker.sock
+                            unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                             docker run --rm \
                               --user root \
                               -v "$HOST_WORKSPACE":/workspace \
@@ -99,14 +107,14 @@ pipeline {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh """
-                        ${SCANNER_HOME}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${PROJECT_KEY} \
-                            -Dsonar.projectName=${PROJECT_NAME} \
-                            -Dsonar.host.url=http://209.97.171.8:9000 \
-                            -Dsonar.sources=src \
-                            -Dsonar.exclusions=**/node_modules/**
+                                                ${SCANNER_HOME}/bin/sonar-scanner \
+                                                    -Dsonar.projectKey=${PROJECT_KEY} \
+                                                    -Dsonar.projectName=${PROJECT_NAME} \
+                                                    -Dsonar.host.url=http://209.97.171.8:9000 \
+                                                    -Dsonar.sources=src \
+                                                    -Dsonar.exclusions=**/node_modules/**
 
-                        test -f "\$WORKSPACE/.scannerwork/report-task.txt"
+                                                test -f "\$WORKSPACE/.scannerwork/report-task.txt"
                     """
                 }
             }
@@ -123,6 +131,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                    export DOCKER_HOST=unix:///var/run/docker.sock
+                    unset DOCKER_TLS_VERIFY DOCKER_CERT_PATH
                     command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia di Jenkins agent"; exit 1; }
                     docker compose down || true
                     docker compose up -d --build
