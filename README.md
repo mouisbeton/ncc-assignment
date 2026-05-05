@@ -3,8 +3,7 @@
 
 ---
 
-[![Build Status](http://165.22.251.252:8080/job/testing/badge/icon)](http://165.22.251.252:8080/job/testing/)
-
+[![Build Status](http://165.22.251.252:8080/buildStatus/icon?job=testing)](http://165.22.251.252:8080/job/testing/)
 ## Deskripsi Pipeline
 
 Pipeline menggunakan Jenkinsfile dan dibagi menjadi beberapa stage terstruktur.
