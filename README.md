@@ -1,61 +1,73 @@
-# NCC Assignment
 
-URL Service: https://ncc-assignment-1-atcnejfrcaagf7b7.indonesiacentral-01.azurewebsites.net
+### url: http://165.22.251.252:3000/
 
-## Deskripsi Singkat Service
+---
 
-Service yang dibuat adalah sebuah aplikasi berbasis Node.js yang berfungsi menyediakan layanan web sederhana dengan beberapa endpoint dasar. Aplikasi ini dirancang agar siap dideploy menggunakan Docker container.
+[![Build Status](http://165.22.251.252:8080/job/testing/badge/icon)](http://165.22.251.252:8080/job/testing/)
 
-## Penjelasan Endpoint /health
+## Deskripsi Pipeline
 
-Endpoint `/health` digunakan sebagai jalur untuk melakukan *health check*. Saat endpoint ini diakses, service akan mengembalikan respons yang menunjukkan status bahwa aplikasi saat ini berjalan aktif dan sehat. Hal ini berguna bagi layanan monitoring atau load balancer untuk memastikan ketersediaan sistem.
+Pipeline menggunakan Jenkinsfile dan dibagi menjadi beberapa stage terstruktur.
 
-## Penjelasan Kode Endpoint
+1. Checkout
+   - Mengambil source code dari repository.
+2. Install
+   - Instalasi dependensi menggunakan npm ci.
+   - Cache sederhana node_modules untuk mempercepat build berikutnya.
+3. Build
+   - Menjalankan build jika diperlukan (sesuai skrip di package.json).
+4. Test
+   - Menjalankan unit test (jika tersedia) dan menghasilkan laporan.
+5. Analyze (SonarQube)
+   - Mengirim hasil analisis ke SonarQube melalui scanner.
+6. Quality Gate
+   - Pipeline gagal otomatis jika Quality Gate tidak terpenuhi.
 
-Aplikasi ini dibangun menggunakan framework Express.js dan memiliki beberapa endpoint dasar:
-- `GET /` : Endpoint root yang mengembalikan pesan selamat datang (Welcome) beserta direktori rute yang tersedia.
-- `GET /health` : Endpoint utama untuk pengecekan kesehatan mesin. Kode memanggil fungsi `process.uptime()` pada Node.js untuk mengirimkan data spesifik seberapa lama aplikasi sudah aktif (uptime) dan menyertakan indikator status `OK`.
+## Penjelasan Integrasi Jenkins dan SonarQube
 
-Selain itu, bagian server (`server.js`) sudah mendukung *Graceful Shutdown* (menangani sinyal `SIGTERM` dan `SIGINT`), yang membuat aplikasi dapat dimatikan dengan aman dengan menyelesaikan semua proses HTTP terlebih dahulu sebelum sepenuhnya exit.
+Integrasi dilakukan dengan langkah berikut:
 
-## Screenshot Bukti Endpoint Dapat Diakses
+1. Install plugin SonarQube Scanner di Jenkins.
+2. Konfigurasi SonarQube Server di Jenkins (Manage Jenkins > Configure System).
+3. Menambahkan credential token SonarQube di Jenkins (Manage Jenkins > Credentials).
+4. Mendefinisikan environment variable di Jenkinsfile untuk host dan token.
+5. Menjalankan tahap analyze dengan SonarQube Scanner dan menunggu hasil Quality Gate.
 
-![image1](image.png)
+## Alur Pipeline (Flow)
 
-## Penjelasan Build File (Dockerfile)
+Flow pipeline berjalan dari build hingga analisis kualitas sebagai berikut:
 
-Aplikasi ini menggunakan fitur *Multi-Stage Build* Docker, yang dibagi ke dalam 2 tahapan:
+Checkout -> Install -> Build -> Test -> Analyze (SonarQube) -> Quality Gate -> Done
 
-1. **Stage 1 (Builder):** Menggunakan basis OS yang ringan `node:18-alpine` untuk memuat file dependensi (`package.json`). Dilakukan instalasi khusus modul untuk tingkat produksi saja menggunakan command `npm ci --omit=dev`, lalu menghapus memori *cache npm* secara otomatis agar image nantinya lebih kecil.
-2. **Stage 2 (Runtime):** Mengambil (copy) folder modul (`node_modules`) yang telah terpasang dari step builder, serta source code (`src/`) utama dari server. Tiga aspek utama tahap ini adalah:
-   - **Expose Port 3000** : Agar sistem mengetahui dan membuka port internal dari container Docker yang digunakan Node.js.
-   - **Healthcheck Internal** : Menyertakan instruksi `HEALTHCHECK` otomatis dari Docker (Setiap 30 detik) yang meniru *request* HTTP (curl/node -e internal) langsung kepada endpoint layanan lokal `/health`. Jika server nonaktif (respons gagal / *timeout*), docker dapat mengirim alert.
-   - **Perintah Eksekusi Server** : Instruksi final di penutup memakai `CMD ["node", "server.js"]` yang mengaktifkan service utama aplikasi ini.
+Jika Quality Gate gagal, pipeline berhenti dan status build menjadi failed.
 
-## Penjelasan Proses Build dan Run Docker
+## Screenshot Konfigurasi
 
-Proses containerization (membuat image Docker) dan menjalankannya membutuhkan langkah-langkah berikut:
+![embeddable_buildstatus](images/image-3.png)
+![jenkins1](images/image-4.png)
+![jenkins2](images/image-5.png)
+![jenkins3](images/image-6.png)
+![jenkins4](images/image-7.png)
+![jenkins5](images/image-8.png)
+![jenkins6](images/image-9.png)
+![jenkins7](images/image-10.png)
+![projectsonar](images/image-2.png)
+![qualityGate](images/image-1.png)
 
-1. Mengemas file project dan dependensi menjadi image menggunakan perintah:
-   ```bash
-   docker build -t mouis/ncc-assignment:latest .
-   ```
-2. Menjalankan image tersebut menjadi container aktif di lokal:
-   ```bash
-   docker run -d -p 8080:8080 mouis/ncc-assignment:latest
-   ```
+## Webhook dan Trigger Otomatis
 
-## Penjelasan Proses Deployment ke Azure App Service
+Webhook diatur pada repository untuk mengirim event push ke Jenkins. Jenkins menerima webhook dan menjalankan pipeline otomatis tanpa harus manual build.
 
-Deployment dilakukan dengan menyiapkan image di registri Docker Hub lalu mengintegrasikannya dengan Azure Web Apps. Berikut urutannya:
+## Badge atau Status Build
 
-1. Melakukan push image dari komputer lokal ke repositori di Docker Hub:
-   ```bash
-   docker push mouis/ncc-assignment:latest
-   ```
-2. Membuka Azure Portal dan membuat resource "Web App" baru.
-3. Pada pemilihan konfigurasi "Publish", digunakan opsi "Docker Container" (OS: Linux).
-4. Pada tab "Docker", bagian Image Source diatur ke "Docker Hub".
-5. Image name and tag disesuaikan dengan nama image yang sebelumnya di-push (contoh: `mouis/ncc-assignment:latest`).
-6. Setelah Web App berhasil dibuat, platform Azure akan secara otomatis mengunduh (pull) image tersebut dari Docker Hub lalu menjalankannya ke server Azure App Service.
+Badge build diaktifkan dari Jenkins dan ditampilkan pada README atau repository untuk menunjukkan status build terkini.
+
+## Optimasi Pipeline
+
+- Cache node_modules untuk mempercepat build berikutnya.
+- Stage test dan lint dapat dijalankan paralel bila skrip mendukung.
+
+## Kendala (Jika Ada)
+
+- VPS kena hack :sob: terpaksa harus rebuild ulang dan reconfig jenkins & sonarqube
 
