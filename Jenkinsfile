@@ -124,6 +124,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'production-env-file', variable: 'SECRET_ENV')]) {
                     sh '''
+                        rm -f .env || true
                         cp $SECRET_ENV .env
                         
                         command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia"; exit 1; }
