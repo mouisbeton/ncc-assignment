@@ -122,11 +122,16 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh '''
-                    command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia di Jenkins agent"; exit 1; }
-                    docker compose down || true
-                    docker compose up -d --build
-                '''
+                withCredentials([file(credentialsId: 'production-env-file', variable: 'SECRET_ENV')]) {
+                    sh '''
+                        cp $SECRET_ENV .env
+                        
+                        command -v docker >/dev/null 2>&1 || { echo "Docker CLI tidak tersedia"; exit 1; }
+                        docker compose down || true
+                        docker compose up -d --build
+                        
+                    '''
+                }
             }
         }
     }

@@ -52,6 +52,7 @@ Jika Quality Gate gagal, pipeline berhenti dan status build menjadi failed.
 ![jenkins7](images/image-10.png)
 ![projectsonar](images/image-2.png)
 ![qualityGate](images/image-1.png)
+![stages](images/image-11.png)
 
 ## Webhook dan Trigger Otomatis
 
