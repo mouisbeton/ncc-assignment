@@ -38,9 +38,13 @@ Integrasi dilakukan dengan menghubungkan Grafana ke Prometheus melalui protokol 
 Dashboard dirancang untuk memberikan informasi kesehatan server secara *real-time*. Metrik utama yang dipantau meliputi:
 * **System Uptime:** Total waktu server telah berjalan.
 * **CPU Usage:** Persentase beban kerja prosesor.
-* **Memory (RAM) Usage:** Penggunaan memori fisik dan swap.
+* **Memory (RAM) Usage:** Penggunaan memori fisik.
 * **Storage / Disk Space:** Kapasitas penyimpanan pada partisi root.
 * **Network Traffic:** Monitor bandwidth Inbound (Download) dan Outbound (Upload).
+* **Swap Memory Usage** Monitoring penggunaan memory swap.
+* **Load Average:** Monitoring average load.
+* **Disk I/O (Read & Write):**Monitoring perpindahan data antara media penyimpanan fisik dan sistem komputer.
+
 
 ![Dashboard Grafana](images/image-3.png)
 
