@@ -43,7 +43,7 @@ Dashboard dirancang untuk memberikan informasi kesehatan server secara *real-tim
 * **Network Traffic:** Monitor bandwidth Inbound (Download) dan Outbound (Upload).
 * **Swap Memory Usage** Monitoring penggunaan memory swap.
 * **Load Average:** Monitoring average load.
-* **Disk I/O (Read & Write):**Monitoring perpindahan data antara media penyimpanan fisik dan sistem komputer.
+* **Disk I/O (Read & Write):**Monitoring perpindahan data antara media penyimpanan fisik dan sistem komputer**.
 
 
 ![Dashboard Grafana](images/image-3.png)
