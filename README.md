@@ -4,70 +4,67 @@
 ---
 
 [![Build Status](http://165.22.251.252:8080/buildStatus/icon?job=testing)](http://165.22.251.252:8080/job/testing/)
-## Deskripsi Pipeline
+## 1. Arsitektur Sistem Monitoring
 
-Pipeline menggunakan Jenkinsfile dan dibagi menjadi beberapa stage terstruktur.
+Sistem ini dibangun menggunakan *stack* monitoring berbasis open-source yang dijalankan sebagai layanan sistem (*systemctl*) untuk memastikan stabilitas dan performa maksimal. Komponen utamanya adalah:
 
-1. Checkout
-   - Mengambil source code dari repository.
-2. Install
-   - Instalasi dependensi menggunakan npm ci.
-   - Cache sederhana node_modules untuk mempercepat build berikutnya.
-3. Build
-   - Menjalankan build jika diperlukan (sesuai skrip di package.json).
-4. Test
-   - Menjalankan unit test (jika tersedia) dan menghasilkan laporan.
-5. Analyze (SonarQube)
-   - Mengirim hasil analisis ke SonarQube melalui scanner.
-6. Quality Gate
-   - Pipeline gagal otomatis jika Quality Gate tidak terpenuhi.
+1.  **Node Exporter (Target):** Bertugas mengumpulkan metrik perangkat keras dan sistem operasi langsung dari kernel Linux (CPU, RAM, Disk, Network) dan mengeksposnya di port `9100`.
+2.  **Prometheus:** Berfungsi sebagai *Time Series Database* (TSDB) yang melakukan *scraping* data dari target, menyimpan data historis, serta mengevaluasi aturan alert.
+3.  **Alertmanager:** Bertugas mengelola notifikasi alert yang dikirim oleh Prometheus, melakukan grouping, dan meneruskannya ke kanal komunikasi pihak ketiga (Discord).
+4.  **Grafana:** Berfungsi sebagai *front-end* visualisasi yang mengambil data dari Prometheus untuk dirender menjadi dashboard interaktif.
 
-## Penjelasan Integrasi Jenkins dan SonarQube
+---
 
-Integrasi dilakukan dengan langkah berikut:
+## 2. Integrasi Prometheus dengan Grafana
 
-1. Install plugin SonarQube Scanner di Jenkins.
-2. Konfigurasi SonarQube Server di Jenkins (Manage Jenkins > Configure System).
-3. Menambahkan credential token SonarQube di Jenkins (Manage Jenkins > Credentials).
-4. Mendefinisikan environment variable di Jenkinsfile untuk host dan token.
-5. Menjalankan tahap analyze dengan SonarQube Scanner dan menunggu hasil Quality Gate.
+Integrasi dilakukan dengan menghubungkan Grafana ke Prometheus melalui protokol HTTP.
 
-## Alur Pipeline (Flow)
+* **Endpoint:** Grafana mengakses API Prometheus pada URL `http://localhost:9090`.
+* **Mekanisme:** Grafana mengirimkan *query* menggunakan bahasa **PromQL** (Prometheus Query Language). Prometheus memproses query tersebut terhadap database internalnya dan mengembalikan data dalam format JSON yang kemudian divisualisasikan oleh Grafana secara *real-time*.
 
-Flow pipeline berjalan dari build hingga analisis kualitas sebagai berikut:
+---
 
-Checkout -> Install -> Build -> Test -> Analyze (SonarQube) -> Quality Gate -> Done
+## 3. Konfigurasi Sistem
 
-Jika Quality Gate gagal, pipeline berhenti dan status build menjadi failed.
+### A. Konfigurasi Prometheus (`prometheus.yml`)
+![Prometheus config](image-1.png)
 
-## Screenshot Konfigurasi
+### B. Konfigurasi Data Source di Grafana
+![Data source Grafana](image-2.png)
+---
 
-![embeddable_buildstatus](images/image-3.png)
-![jenkins1](images/image-4.png)
-![jenkins2](images/image-5.png)
-![jenkins3](images/image-6.png)
-![jenkins4](images/image-7.png)
-![jenkins5](images/image-8.png)
-![jenkins6](images/image-9.png)
-![jenkins7](images/image-10.png)
-![projectsonar](images/image-2.png)
-![qualityGate](images/image-1.png)
-![stages](images/image-11.png)
+## 4. Visualisasi (Custom Dashboard)
 
-## Webhook dan Trigger Otomatis
+Dashboard dirancang untuk memberikan informasi kesehatan server secara *real-time*. Metrik utama yang dipantau meliputi:
+* **System Uptime:** Total waktu server telah berjalan.
+* **CPU Usage:** Persentase beban kerja prosesor.
+* **Memory (RAM) Usage:** Penggunaan memori fisik dan swap.
+* **Storage / Disk Space:** Kapasitas penyimpanan pada partisi root.
+* **Network Traffic:** Monitor bandwidth Inbound (Download) dan Outbound (Upload).
 
-Webhook diatur pada repository untuk mengirim event push ke Jenkins. Jenkins menerima webhook dan menjalankan pipeline otomatis tanpa harus manual build.
+![Dashboard Grafana](image-3.png)
 
-## Badge atau Status Build
+---
 
-Badge build diaktifkan dari Jenkins dan ditampilkan pada README atau repository untuk menunjukkan status build terkini.
+## 5. Alur Monitoring & Alerting
 
-## Optimasi Pipeline
+Alur kerja data dan notifikasi dalam sistem ini adalah sebagai berikut:
 
-- Cache node_modules untuk mempercepat build berikutnya.
-- Stage test dan lint dapat dijalankan paralel bila skrip mendukung.
+1.  **Metrics Collection:** Node Exporter mengambil metrik mentah sistem.
+2.  **Scraping:** Prometheus menarik metrik tersebut setiap 5 detik (berdasarkan konfigurasi `scrape_interval`).
+3.  **Visualization:** Grafana menampilkan data tersebut melalui query PromQL.
+4.  **Alerting Logic:**
+    * Prometheus mengevaluasi aturan alert (misal: `up == 0`).
+    * Jika kondisi terpenuhi selama durasi `for: 10s`, Prometheus mengirimkan alert ke **Alertmanager**.
+5.  **Notification:** Alertmanager memproses alert tersebut dan mengirimkan notifikasi ke **Discord Webhook** secara instan.
 
-## Kendala (Jika Ada)
+![Alert rules yaml](image-5.png)
+![Alert Discord](image-4.png)
 
-- VPS kena hack :sob: terpaksa harus rebuild ulang dan reconfig jenkins & sonarqube
+---
+
+## 6. Kendala yang Dihadapi
+
+1.  **Port Conflict:** Terjadi bentrok port 3000 antara service awal dan Grafana sehingga grafana sekarang menggunakan port 5555
+3.  **Prometheus to Alertmanager Connection:** Alert sudah Firing di Prometheus namun tidak muncul di Discord. Solusi: Memperbaiki target `alerting` di `prometheus.yml` ke `localhost:9093` dan memastikan durasi `group_wait` diperpendek untuk pengujian.
 
