@@ -27,10 +27,10 @@ Integrasi dilakukan dengan menghubungkan Grafana ke Prometheus melalui protokol 
 ## 3. Konfigurasi Sistem
 
 ### A. Konfigurasi Prometheus (`prometheus.yml`)
-![Prometheus config](image-1.png)
+![Prometheus config](images/image-1.png)
 
 ### B. Konfigurasi Data Source di Grafana
-![Data source Grafana](image-2.png)
+![Data source Grafana](images/image-2.png)
 ---
 
 ## 4. Visualisasi (Custom Dashboard)
@@ -42,7 +42,7 @@ Dashboard dirancang untuk memberikan informasi kesehatan server secara *real-tim
 * **Storage / Disk Space:** Kapasitas penyimpanan pada partisi root.
 * **Network Traffic:** Monitor bandwidth Inbound (Download) dan Outbound (Upload).
 
-![Dashboard Grafana](image-3.png)
+![Dashboard Grafana](images/image-3.png)
 
 ---
 
@@ -58,8 +58,8 @@ Alur kerja data dan notifikasi dalam sistem ini adalah sebagai berikut:
     * Jika kondisi terpenuhi selama durasi `for: 10s`, Prometheus mengirimkan alert ke **Alertmanager**.
 5.  **Notification:** Alertmanager memproses alert tersebut dan mengirimkan notifikasi ke **Discord Webhook** secara instan.
 
-![Alert rules yaml](image-5.png)
-![Alert Discord](image-4.png)
+![Alert rules yaml](images/image-5.png)
+![Alert Discord](images/image-4.png)
 
 ---
 
